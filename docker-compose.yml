@@ -1,0 +1,21 @@
+version: '3'
+services:
+  db:
+    container_name: news_db
+    image: postgres:11
+    env_file:
+      - .env 
+    ports:
+      - "15432:5432"
+    
+  
+  news:
+    container_name: news
+    build: ./src
+    env_file:
+      - .env 
+    environment:
+      - POSTGRES_PORT=15432
+    volumes:
+      - ./src:/code
+    tty: true
