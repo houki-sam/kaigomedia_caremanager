@@ -3,10 +3,10 @@ import time
 import uuid
 
 import bs4
-import psycopg2
+import MySQLdb
 import requests
 
-from .system import *
+from system import *
 
 
 #スクレイピングする際のベースのURL
@@ -15,18 +15,19 @@ Url = "http://www.care-mane.com/news/6/"
 class Crawler(object):
     def __init__(self):
         #接続情報
-        user = os.environ["POSTGRES_USER"]
-        password = os.environ["POSTGRES_PASSWORD"]
-        port = os.environ["POSTGRES_PORT"]
-        db = os.environ["POSTGRES_DB"]
+        host = "db"
+        user = os.environ["MYSQL_USER"]
+        password = os.environ["MYSQL_PASSWORD"]
+        port = os.environ["MYSQL_PORT"]
+        db = os.environ["MYSQL_DATABASE"]
 
-        url = "postgresql://news_db:{}/{}?user={}&password={}".format(
-            5432,
-            db,
-            user,
-            password,
+        self.conn = MySQLdb.connect(
+            host = host,
+            user = user,
+            port = int(port),
+            passwd = password,
+            db = db
         )
-        self.conn = psycopg2.connect(url)
         self.cur = self.conn.cursor()
     
     #　接続を切るための関数
@@ -110,6 +111,6 @@ def is_exists(cur, value):
     
 def main():
     a=Crawler()
-    a.create_table("/code/sub/create_database.sql")
-    a.controller(5)
+    
 
+main()

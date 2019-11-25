@@ -1,21 +1,26 @@
 version: '3'
 services:
   db:
-    container_name: news_db
-    image: postgres:11
+    container_name: db
+    build: ./build/db
+    restart: always
     env_file:
       - .env 
     ports:
-      - "15432:5432"
+      - "3306:3306"
+    volumes:
+      - ./build/db:/docker-entrypoint-initdb.d
+      - ./data:/var/lib/mysql
+      
     
   
-  news:
-    container_name: news
-    build: ./src
+  python:
+    container_name: python
+    build: ./build/python
     env_file:
       - .env 
     environment:
-      - POSTGRES_PORT=15432
+      - POSTGRES_PORT=3306
     volumes:
       - ./src:/code
     tty: true
