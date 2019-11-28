@@ -4,23 +4,22 @@ services:
     container_name: db
     build: ./build/db
     restart: always
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
     env_file:
       - .env 
     ports:
-      - "3306:3306"
+      - "3314:3306"
     volumes:
-      - ./build/db:/docker-entrypoint-initdb.d
+      - ./build/db/:/docker-entrypoint-initdb.d
       - ./data:/var/lib/mysql
       
-    
-  
   python:
     container_name: python
     build: ./build/python
     env_file:
       - .env 
     environment:
-      - POSTGRES_PORT=3306
+      - PORT=3314
     volumes:
       - ./src:/code
     tty: true
