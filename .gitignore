@@ -134,3 +134,4 @@ dmypy.json
 .devcontainer/
 .idea
 database.dump
+data/

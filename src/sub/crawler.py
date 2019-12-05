@@ -1,6 +1,8 @@
 import os
+import re
 import time
 import uuid
+import itertools
 
 import bs4
 import MySQLdb
@@ -73,6 +75,44 @@ class Crawler(object):
                     time.sleep(10)
                     print("失敗")
             self.page_num += 1
+    
+    def parsing(self):
+        sql = "select id, overview from News"
+        self.cur.execute(sql)
+        data2=self.cur.fetchall()
+        #pattern = "「.*?（.*?[市|町|村|区].*?）」|「[^「」]*?」（.*?[市|町|村|区].*?）"
+        pattern = "「[^「」]*」（(?=.*市|町|村|区.*)[^（）]*）"
+        data = [[x[0],re.findall(pattern, x[1]) ]
+            for x in data2 if len(re.findall(pattern, x[1]))!=0]
+        dataset=[]
+        for x in data:
+            for y in x[1]:
+                dataset.append([x[0],y])
+        dataset = [x for x in dataset if re.search(r".*?[市|町|村|区].*?", x[1])]
+        dataset2=[]
+        for x in dataset:
+            words1 = [y for y in re.split(r'「|」|（|）|、|,', x[1]) if y!='']
+            words2 = [y for y in words1[1:] if re.search("市|町|村|区",y)]
+            for z in [y for y in words2 if y!='']:
+                dataset2.append([x[0],None,words1[0],words2[0],None])
+            
+        """  
+        sql2= "delete from Facility where id in({})".format(",".join(["'"+x[0]+"'" for x in dataset2]))
+        self.cur.execute(sql2)
+        self.conn.commit()
+        """
+        arr = list(map(list, set(map(tuple, dataset2))))
+        self.cur.executemany("insert into Facility values(%s,%s,%s,%s,%s)",arr)
+        self.conn.commit()
+        print(arr)
+            
+
+def hh(x):
+    if len(x)>0:
+        return True
+    else:
+        return False
+       
 
 
 def is_exists(cur, value):
@@ -82,7 +122,8 @@ def is_exists(cur, value):
     
 def main():
     a=Crawler()
-    a.controller(5)
+    #a.controller(5)
+    a.parsing()
 
 
     
